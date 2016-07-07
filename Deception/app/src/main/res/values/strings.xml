@@ -4,6 +4,8 @@
     <string name="action_remove">Delete</string>
     <string name="title_activity_login">Sign in</string>
 
+    <string name="compose_msg_hint_long">Type a message</string>
+
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password (optional)</string>
