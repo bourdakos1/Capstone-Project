@@ -33,36 +33,31 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.xlythe.extendedkeyboard.EditText;
+
 import java.util.ArrayList;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    // Keyboard hack
-    private int mScreenSize;
-    private int mKeyboardSize;
-    private boolean mAdjustNothing;
-    private boolean mKeyboardOpen;
-
     private Toolbar mToolbar;
-    private ExtendedEditText mEditText;
+    private EditText mEditText;
     private ImageView mSendButton;
     private RecyclerView mRecyclerView;
     private MessageAdapter mAdapter;
     private ProgressBar mProgressBar;
-    private View mAttachView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mEditText = (ExtendedEditText) findViewById(R.id.edit_text);
+        mEditText = (EditText) findViewById(R.id.edit_text);
+        mEditText.setContainer(R.id.fragment_container);
         mSendButton = (ImageView) findViewById(R.id.send);
         mProgressBar = (ProgressBar) findViewById(R.id.progress);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        mAttachView = findViewById(R.id.fragment_container);
         mRecyclerView = (RecyclerView) findViewById(R.id.list);
 
         setSupportActionBar(mToolbar);
@@ -88,41 +83,16 @@ public class MainActivity extends AppCompatActivity {
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState > 0) {
-                    InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    mgr.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
                     mEditText.clearFocus();
+                    mEditText.hideFragment();
                 }
             }
         });
     }
 
     public void initKeyboard() {
-        final Window rootWindow = getWindow();
-        final View root = rootWindow.getDecorView().findViewById(android.R.id.content);
-
-        // Seems redundant to set as ADJUST_NOTHING in manifest and then immediately to ADJUST_RESIZE
-        // but it seems that the input gets reset to a default on keyboard dismissal if not set otherwise.
-        rootWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        root.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            public void onGlobalLayout() {
-                Rect r = new Rect();
-                View view = rootWindow.getDecorView();
-                view.getWindowVisibleDisplayFrame(r);
-                if (mScreenSize != 0 && mScreenSize > r.bottom) {
-                    mKeyboardSize = mScreenSize - r.bottom;
-                    mAttachView.getLayoutParams().height = mKeyboardSize;
-                    rootWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
-                    if (mKeyboardOpen) {
-                        mAttachView.setVisibility(View.VISIBLE);
-                    }
-                    mAdjustNothing = true;
-                } else {
-                    mScreenSize = r.bottom;
-                }
-            }
-        });
-
         setSendable(false);
+
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -143,14 +113,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mEditText.setOnDismissKeyboardListener(new ExtendedEditText.OnDismissKeyboardListener() {
-            @Override
-            public void onDismissed() {
-                mEditText.clearFocus();
-                onAttachmentHidden();
-            }
-        });
-
         mEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -162,24 +124,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {}
-        });
-
-        mEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                mKeyboardOpen = hasFocus;
-                if (hasFocus) {
-                    if (!mAdjustNothing) {
-                        onAttachmentHidden();
-                    } else {
-                        // Just because it has focus doesnt mean the keyboard actually opened
-                        // This seems like an easier fix than not showing the attachview
-                        InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                        mgr.showSoftInput(mEditText, 0);
-                        mAttachView.setVisibility(View.VISIBLE);
-                    }
-                }
-            }
         });
     }
 
@@ -228,26 +172,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onAttachmentClicked(View view){
-        InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        mgr.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
-
-        mEditText.clearFocus();
-        mAttachView.setVisibility(View.VISIBLE);
-
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, VoteFragment.newInstance("hi1", "bye2")).commit();
-    }
-
-    public void onAttachmentHidden(){
-        Fragment activeFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        if (activeFragment != null) {
-            getSupportFragmentManager().beginTransaction().remove(activeFragment).commit();
-        }
-        mAttachView.setVisibility(View.GONE);
-    }
-
     public void send(){
         //TODO: finish this method
+        mEditText.showFragment(VoteFragment.newInstance("hi1", "bye2"));
     }
 }

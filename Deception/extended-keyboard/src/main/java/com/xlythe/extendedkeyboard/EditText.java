@@ -23,7 +23,7 @@ public class EditText extends android.widget.EditText {
     private int mKeyboardSize;
     private boolean mAdjustNothing;
     private boolean mKeyboardOpen;
-    private int mFragmentContainer = mContext.getResources().getIdentifier("fragment_container", "id", mContext.getPackageName());
+    private int mFragmentContainer;
 
     public EditText(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -42,7 +42,9 @@ public class EditText extends android.widget.EditText {
 
     private void initKeyboard(Context context) {
         mContext = ((FragmentActivity) context);
-        mAttachView = findViewById(mFragmentContainer);
+        // TODO: doesn't work
+//        mFragmentContainer = mContext.getResources().getIdentifier("fragment_container", "id", mContext.getPackageName());
+//        mAttachView = mContext.findViewById(mFragmentContainer);
         final Window rootWindow = mContext.getWindow();
         final View root = rootWindow.getDecorView().findViewById(android.R.id.content);
 
@@ -72,8 +74,8 @@ public class EditText extends android.widget.EditText {
     @Override
     public boolean onKeyPreIme(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-            clearFocus();
-            hideAttachment();
+            super.clearFocus();
+            hideFragment();
         }
         return super.onKeyPreIme(keyCode, event);
     }
@@ -84,7 +86,7 @@ public class EditText extends android.widget.EditText {
         mKeyboardOpen = focused;
         if (focused) {
             if (!mAdjustNothing) {
-                hideAttachment();
+                hideFragment();
             } else {
                 // Just because it has focus doesnt mean the keyboard actually opened
                 // This seems like an easier fix than not showing the attachview
@@ -95,18 +97,16 @@ public class EditText extends android.widget.EditText {
         }
     }
 
-    private void showAttachment(Fragment fragment){
-        InputMethodManager mgr = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-        mgr.hideSoftInputFromWindow(getWindowToken(), 0);
-
+    public void showFragment(Fragment fragment){
         clearFocus();
+
         mAttachView.setVisibility(View.VISIBLE);
 
         FragmentTransaction transaction = mContext.getSupportFragmentManager().beginTransaction();
         transaction.replace(mAttachView.getId(), fragment).commit();
     }
 
-    private void hideAttachment(){
+    public void hideFragment() {
         Fragment activeFragment = mContext.getSupportFragmentManager().findFragmentById(mAttachView.getId());
         if (activeFragment != null) {
             mContext.getSupportFragmentManager().beginTransaction().remove(activeFragment).commit();
@@ -116,5 +116,13 @@ public class EditText extends android.widget.EditText {
 
     public void setContainer(int id){
         mFragmentContainer = id;
+        mAttachView = mContext.findViewById(mFragmentContainer);
+    }
+
+    @Override
+    public void clearFocus() {
+        InputMethodManager mgr = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+        mgr.hideSoftInputFromWindow(getWindowToken(), 0);
+        super.clearFocus();
     }
 }
