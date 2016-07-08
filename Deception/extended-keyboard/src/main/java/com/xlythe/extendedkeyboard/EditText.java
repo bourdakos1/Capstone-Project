@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -23,7 +24,6 @@ public class EditText extends android.widget.EditText {
     private int mKeyboardSize;
     private boolean mAdjustNothing;
     private boolean mKeyboardOpen;
-    private int mFragmentContainer;
 
     public EditText(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -41,10 +41,14 @@ public class EditText extends android.widget.EditText {
     }
 
     private void initKeyboard(Context context) {
-        mContext = ((FragmentActivity) context);
-        // TODO: doesn't work
-//        mFragmentContainer = mContext.getResources().getIdentifier("fragment_container", "id", mContext.getPackageName());
-//        mAttachView = mContext.findViewById(mFragmentContainer);
+        if (context instanceof FragmentActivity) {
+            mContext = (FragmentActivity) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must extend FragmentActivity");
+        }
+        // TODO: This still doesnt work
+        //setContainer(R.id.container);
         final Window rootWindow = mContext.getWindow();
         final View root = rootWindow.getDecorView().findViewById(android.R.id.content);
 
@@ -74,7 +78,7 @@ public class EditText extends android.widget.EditText {
     @Override
     public boolean onKeyPreIme(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-            super.clearFocus();
+            clearFocus();
             hideFragment();
         }
         return super.onKeyPreIme(keyCode, event);
@@ -85,28 +89,31 @@ public class EditText extends android.widget.EditText {
         super.onFocusChanged(focused, direction, previouslyFocusedRect);
         mKeyboardOpen = focused;
         if (focused) {
-            if (!mAdjustNothing) {
-                hideFragment();
-            } else {
-                // Just because it has focus doesnt mean the keyboard actually opened
-                // This seems like an easier fix than not showing the attachview
-                InputMethodManager mgr = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-                mgr.showSoftInput(this, 0);
-                mAttachView.setVisibility(View.VISIBLE);
-            }
+            showKeyboard();
         }
     }
 
     public void showFragment(Fragment fragment){
         clearFocus();
-
         mAttachView.setVisibility(View.VISIBLE);
 
         FragmentTransaction transaction = mContext.getSupportFragmentManager().beginTransaction();
         transaction.replace(mAttachView.getId(), fragment).commit();
     }
 
-    public void hideFragment() {
+    public void showKeyboard(){
+        if (!mAdjustNothing) {
+            hideFragment();
+        } else {
+            // Just because it has focus doesnt mean the keyboard actually opened
+            // This seems like an easier fix than not showing the attachview
+            InputMethodManager mgr = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+            mgr.showSoftInput(this, 0);
+            mAttachView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideFragment() {
         Fragment activeFragment = mContext.getSupportFragmentManager().findFragmentById(mAttachView.getId());
         if (activeFragment != null) {
             mContext.getSupportFragmentManager().beginTransaction().remove(activeFragment).commit();
@@ -114,9 +121,23 @@ public class EditText extends android.widget.EditText {
         mAttachView.setVisibility(View.GONE);
     }
 
+    public void hideKeyboard() {
+        clearFocus();
+        hideFragment();
+    }
+
     public void setContainer(int id){
-        mFragmentContainer = id;
-        mAttachView = mContext.findViewById(mFragmentContainer);
+        mAttachView = mContext.findViewById(id);
+        mAttachView.getLayoutParams().height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (int) 263.3333, getResources().getDisplayMetrics());
+        mAttachView.setVisibility(GONE);
+    }
+
+    public boolean getFragmentVisibility() {
+        return mAttachView.getVisibility() == View.VISIBLE;
+    }
+
+    public boolean getKeyboardVisibility() {
+        return mKeyboardOpen;
     }
 
     @Override

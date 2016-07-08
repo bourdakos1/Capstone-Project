@@ -83,8 +83,7 @@ public class MainActivity extends AppCompatActivity {
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState > 0) {
-                    mEditText.clearFocus();
-                    mEditText.hideFragment();
+                    mEditText.hideKeyboard();
                 }
             }
         });
@@ -175,5 +174,14 @@ public class MainActivity extends AppCompatActivity {
     public void send(){
         //TODO: finish this method
         mEditText.showFragment(VoteFragment.newInstance("hi1", "bye2"));
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mEditText.getFragmentVisibility()) {
+            mEditText.hideKeyboard();
+        } else {
+            super.onBackPressed();
+        }
     }
 }
