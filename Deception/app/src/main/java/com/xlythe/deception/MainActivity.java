@@ -1,17 +1,9 @@
 package com.xlythe.deception;
 
 import android.animation.ValueAnimator;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.graphics.PorterDuff;
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -20,29 +12,22 @@ import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.xlythe.extendedkeyboard.EditText;
+import com.xlythe.swap.SwapEditText;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private Toolbar mToolbar;
-    private EditText mEditText;
+    private SwapEditText mEditText;
     private ImageView mSendButton;
     private RecyclerView mRecyclerView;
     private MessageAdapter mAdapter;
@@ -53,8 +38,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mEditText = (EditText) findViewById(R.id.edit_text);
-        mEditText.setContainer(R.id.fragment_container);
+        mEditText = (SwapEditText) findViewById(R.id.edit_text);
         mSendButton = (ImageView) findViewById(R.id.send);
         mProgressBar = (ProgressBar) findViewById(R.id.progress);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
