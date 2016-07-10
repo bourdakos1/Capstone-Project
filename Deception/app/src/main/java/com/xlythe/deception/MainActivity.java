@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private SwapEditText mEditText;
     private ImageView mSendButton;
+    private ImageView mDaggerButton;
     private RecyclerView mRecyclerView;
     private MessageAdapter mAdapter;
     private ProgressBar mProgressBar;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
         mEditText = (SwapEditText) findViewById(R.id.edit_text);
         mSendButton = (ImageView) findViewById(R.id.send);
+        mDaggerButton = (ImageView) findViewById(R.id.dagger);
         mProgressBar = (ProgressBar) findViewById(R.id.progress);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mRecyclerView = (RecyclerView) findViewById(R.id.list);
@@ -83,11 +85,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        mDaggerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFragment();
+            }
+        });
+
         mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (mSendButton.isEnabled()) {
+                    if (mSendButton.getVisibility() == View.VISIBLE) {
                         send();
                     }
                     return true;
@@ -144,19 +153,22 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Updates the send button ui
-     * TODO: Should switch out setting button as disabled with dagger icon
      */
     public void setSendable(boolean sendable){
-        mSendButton.setEnabled(sendable);
         if (sendable) {
-            mSendButton.setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
+            mSendButton.setVisibility(View.VISIBLE);
+            mDaggerButton.setVisibility(View.GONE);
         } else {
-            mSendButton.clearColorFilter();
+            mDaggerButton.setVisibility(View.VISIBLE);
+            mSendButton.setVisibility(View.GONE);
         }
     }
 
     public void send(){
-        //TODO: finish this method
+        mEditText.setText("");
+    }
+
+    public void openFragment(){
         mEditText.showFragment(VoteFragment.newInstance("hi1", "bye2"));
     }
 
