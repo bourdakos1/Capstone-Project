@@ -5,7 +5,6 @@ import android.content.Context;
 import com.xlythe.dao.Database;
 import com.xlythe.dao.Param;
 import com.xlythe.dao.RemoteModel;
-import com.xlythe.dao.Unique;
 
 /**
  * Created by Niko on 7/2/16.
@@ -27,11 +26,19 @@ public class User extends RemoteModel<User> {
             where(new Param("password", password));
             return this;
         }
+
+        public User.Query name(String name) {
+            where(new Param("name", name));
+            return this;
+        }
+
+        public User.Query email(String email) {
+            where(new Param("email", email));
+            return this;
+        }
     }
 
-    @Unique
     private int id;
-
     private String username;
     private String password;
     private String name;
@@ -39,6 +46,10 @@ public class User extends RemoteModel<User> {
 
     public User(Context context) {
         super(context);
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getUsername() {

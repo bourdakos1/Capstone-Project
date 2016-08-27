@@ -5,5 +5,7 @@
     <color name="colorAccent">#3f51b5</color>
     <color name="titleText">#212121</color>
     <color name="colorBackground">#ffffff</color>
+    <color name="voteBackground">#fafafa</color>
     <color name="colorGrey">#f1f0f0</color>
+    <color name="unselected">#e1e1e1</color>
 </resources>

@@ -85,10 +85,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        //TODO: THIS IS JUST TO BYPASS LOGIN - DELETE
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        startActivity(intent);
-        finish();
+        // TODO: use AccountManager to store the username and password
+        new User.Query(getApplicationContext()).first(new RemoteModel.Callback<User>() {
+            @Override
+            public void onSuccess(User user) {
+                Intent intent = new Intent(getApplicationContext(), GameActivity.class);
+                startActivity(intent);
+                finish();
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+            }
+        });
+
     }
 
     private void populateAutoComplete() {
@@ -178,25 +188,21 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            new User.Query(getApplicationContext()).username(email).first(new RemoteModel.Callback<User>() {
+            new User.Query(getApplicationContext()).username(email).password(password).first(new RemoteModel.Callback<User>() {
                 @Override
                 public void onSuccess(User user) {
                     showProgress(false);
-                    if (user == null) {
-                        mPasswordView.setError(getString(R.string.error_incorrect_password));
-                        mPasswordView.requestFocus();
-                    } else {
-                        Log.d(TAG, user.getName());
-                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
+                    Log.d(TAG, user.getName());
+                    Intent intent = new Intent(getApplicationContext(), GameActivity.class);
+                    startActivity(intent);
+                    finish();
                 }
 
                 @Override
                 public void onFailure(Throwable throwable) {
                     Log.e(TAG, "Failed to reach server", throwable);
                     showProgress(false);
+                    mPasswordView.setError(getString(R.string.error_incorrect_password));
                 }
             });
         }

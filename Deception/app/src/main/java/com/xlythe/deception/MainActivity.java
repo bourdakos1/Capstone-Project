@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openFragment(){
-        mEditText.showFragment(new VoteFragment());
+        mEditText.showFragment(new BottomCardFragment());
     }
 
     @Override
